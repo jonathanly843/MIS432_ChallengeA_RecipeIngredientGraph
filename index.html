@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingredient Knowledge Graph — MIS 432 Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --ink: #1C1A16;
+    --ink-muted: #6B6760;
+    --ink-faint: #B0AEA9;
+    --sage: #5C7A5C;
+    --sage-light: #E8F0E8;
+    --sage-dark: #3A5C3A;
+    --spice: #C4622D;
+    --spice-light: #FAE8DC;
+    --spice-dark: #8B3A12;
+    --gold: #C9933A;
+    --gold-light: #FDF3E3;
+    --border: rgba(28,26,22,0.12);
+    --border-strong: rgba(28,26,22,0.25);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border-strong);
+    padding: 2.5rem 2rem 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--spice);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+  }
+
+  .header-meta {
+    font-size: 13px;
+    color: var(--ink-muted);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ── Main layout ── */
+  main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem 5rem;
+  }
+
+  /* ── Section headers ── */
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1.25rem;
+    line-height: 1.25;
+  }
+
+  /* ── Business Case section ── */
+  .business-case {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 4rem;
+  }
+
+  .bc-main {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem 2rem;
+    grid-column: 1 / -1;
+  }
+
+  .bc-main p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: 68ch;
+  }
+
+  .bc-main p + p {
+    margin-top: 0.9rem;
+  }
+
+  .analogy-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  .analogy-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .analogy-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .analogy-card.ec::before { background: var(--sage); }
+  .analogy-card.sp::before { background: var(--spice); }
+
+  .analogy-card-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .analogy-card.ec .analogy-card-label { color: var(--sage-dark); }
+  .analogy-card.sp .analogy-card-label { color: var(--spice-dark); }
+
+  .analogy-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+
+  .analogy-card p {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ── Graph section ── */
+  .graph-section { margin-bottom: 4rem; }
+
+  .controls-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .control-slot {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+  }
+
+  .control-slot-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.5rem;
+  }
+
+  .control-slot select {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%236B6760' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+      padding-right: 20px;
+  }
+
+  .control-slot-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  .dot-1 { background: var(--sage); }
+  .dot-2 { background: var(--spice); }
+  .dot-3 { background: var(--gold); }
+
+  .graph-canvas {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 1.5rem;
+    padding: 0 0.25rem;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch {
+    width: 20px; height: 3px;
+    border-radius: 2px;
+  }
+
+  /* ── Recommendations ── */
+  .recs-section h2 { margin-bottom: 0.5rem; }
+  .recs-subtitle {
+    font-size: 14px;
+    color: var(--ink-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  #recs-empty {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 14px;
+  }
+
+  #recs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .rec-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .rec-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .rec-rank {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.35rem;
+  }
+
+  .rec-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.6rem;
+  }
+
+  .rec-score-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.75rem;
+  }
+
+  .rec-score-bar-bg {
+    flex: 1;
+    height: 5px;
+    background: var(--cream);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .rec-score-bar {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--sage);
+    transition: width 0.5s ease;
+  }
+
+  .rec-score-num {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--sage-dark);
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .rec-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 0.75rem;
+  }
+
+  .rec-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .tag-cuisine { background: var(--sage-light); color: var(--sage-dark); }
+  .tag-flavor  { background: var(--spice-light); color: var(--spice-dark); }
+  .tag-source  { background: var(--gold-light); color: #7A5A1A; }
+
+  .rec-why {
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.6;
+    border-top: 1px solid var(--border);
+    padding-top: 0.6rem;
+    margin-top: 0.2rem;
+  }
+
+  .rec-why strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    font-size: 12px;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .business-case { grid-template-columns: 1fr; }
+    .analogy-cards { grid-template-columns: 1fr; }
+    .controls-row  { grid-template-columns: 1fr; }
+    #recs-grid     { grid-template-columns: 1fr; }
+    .bc-main { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">MIS 432 · AI in Business · Western Washington University</div>
+  <h1>Ingredient Knowledge Graph</h1>
+  <div class="header-meta">
+    <span>Lab Portfolio Piece</span>
+    <span>Knowledge Graphs · Recommendation Systems · AI Factory</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── SECTION 1: Business Case ── -->
+  <section style="margin-bottom:3.5rem">
+    <div class="section-label">Section 1</div>
+    <h2>The Business Case</h2>
+
+    <div class="bc-main" style="margin-bottom:1.25rem">
+      <p>When a home cook runs out of an ingredient, they usually guess a substitute or give up. This system does something smarter: it maps ingredients as a network, connecting them through the cuisines they appear in and the flavors they share. When you ask "what can I use instead of lemon?", it doesn't just say "lime" — it explains that lime and lemon both appear in Mexican and Greek cooking, both taste acidic and bright, and scores every possible substitute so you see the strongest match first.</p>
+      <p>That ranked, explainable output is what turns a simple lookup into a recommendation engine. A grocery app, a meal-kit service, or a recipe platform could use this to reduce cart abandonment when items are out of stock, personalize menus around what's in season, or help users confidently cook with unfamiliar ingredients.</p>
+    </div>
+
+    <div class="analogy-cards">
+      <div class="analogy-card ec">
+        <div class="analogy-card-label">Like EveryCure (Lab 1)</div>
+        <h3>A graph that finds hidden connections</h3>
+        <p>EveryCure maps drugs, proteins, and diseases as a network, then scores drug-disease pairs by how many biological relationships connect them. This system does the same thing with ingredients, cuisines, and flavors. The AI doesn't "know" that lime substitutes for lemon — it discovers the connection by counting shared nodes in the graph. Both systems use the same logic: the more shared connections, the stronger the match.</p>
+      </div>
+      <div class="analogy-card sp">
+        <div class="analogy-card-label">Like Spotify (Lab 3)</div>
+        <h3>Multi-ingredient taste profiling</h3>
+        <p>Spotify builds a taste profile from your listening history — if you play three songs, it finds the fourth that fits all three. This system works the same way: pick three ingredients and it aggregates their combined cuisine and flavor connections to find what fits your whole selection, not just one item. That's collaborative filtering applied to your pantry instead of your playlist.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: Interactive Graph ── -->
+  <section class="graph-section">
+    <div class="section-label">Section 2</div>
+    <h2>Knowledge Graph Explorer</h2>
+    <p style="font-size:14px;color:var(--ink-muted);margin-bottom:1.25rem">Select up to 3 ingredients. The graph highlights their connections — then scroll down to see ranked substitution recommendations built from your combined flavor profile.</p>
+
+    <div class="controls-row">
+      <div class="control-slot">
+        <div class="control-slot-label"><span class="control-slot-dot dot-1"></span>Ingredient 1</div>
+        <select id="sel1" onchange="update()">
+          <option value="">— none —</option>
+        </select>
+      </div>
+      <div class="control-slot">
+        <div class="control-slot-label"><span class="control-slot-dot dot-2"></span>Ingredient 2</div>
+        <select id="sel2" onchange="update()">
+          <option value="">— none —</option>
+        </select>
+      </div>
+      <div class="control-slot">
+        <div class="control-slot-label"><span class="control-slot-dot dot-3"></span>Ingredient 3</div>
+        <select id="sel3" onchange="update()">
+          <option value="">— none —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-swatch" style="background:#5C7A5C"></div>Shared cuisines</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#C4622D"></div>Shared flavors</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#C9933A"></div>Weak link (1 shared)</div>
+      <div class="legend-item"><div class="legend-swatch" style="background:#B0AEA9"></div>No connection</div>
+    </div>
+
+    <div class="graph-canvas">
+      <svg id="rgsvg" width="100%" viewBox="0 0 900 420" style="display:block"></svg>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2b: Recommendations ── -->
+  <section class="recs-section">
+    <div class="section-label">Recommendations</div>
+    <h2>What Goes Well With Your Selection</h2>
+    <div class="recs-subtitle" id="recs-subtitle">Pick at least one ingredient above to generate recommendations.</div>
+
+    <div id="recs-empty">
+      Select 1–3 ingredients using the dropdowns above to see ranked substitution matches with explanations.
+    </div>
+    <div id="recs-grid" style="display:none"></div>
+  </section>
+
+</main>
+
+<footer>
+  <span>MIS 432 · AI in Business · Western Washington University</span>
+  <span>Knowledge Graphs &amp; Recommendation Systems</span>
+</footer>
+
+<script>
+const INGREDIENTS = [
+  { id:"butter",       label:"Butter",        cuisines:["French","Italian","American"],       flavors:["rich","creamy","savory"] },
+  { id:"olive_oil",    label:"Olive Oil",      cuisines:["Italian","Greek","Spanish"],         flavors:["fruity","savory","light"] },
+  { id:"garlic",       label:"Garlic",         cuisines:["Italian","Chinese","Mexican"],       flavors:["pungent","savory","aromatic"] },
+  { id:"ginger",       label:"Ginger",         cuisines:["Chinese","Indian","Japanese"],       flavors:["spicy","aromatic","warm"] },
+  { id:"lemon",        label:"Lemon",          cuisines:["Greek","Italian","French"],          flavors:["acidic","bright","citrus"] },
+  { id:"lime",         label:"Lime",           cuisines:["Mexican","Thai","Indian"],           flavors:["acidic","bright","citrus"] },
+  { id:"cumin",        label:"Cumin",          cuisines:["Indian","Mexican","Middle Eastern"], flavors:["warm","earthy","spicy"] },
+  { id:"coriander",    label:"Coriander",      cuisines:["Indian","Thai","Mexican"],           flavors:["citrus","warm","aromatic"] },
+  { id:"soy_sauce",    label:"Soy Sauce",      cuisines:["Chinese","Japanese","Korean"],       flavors:["umami","salty","savory"] },
+  { id:"miso",         label:"Miso",           cuisines:["Japanese","Korean"],                 flavors:["umami","savory","rich"] },
+  { id:"coconut_milk", label:"Coconut Milk",   cuisines:["Thai","Indian","Indonesian"],        flavors:["creamy","sweet","rich"] },
+  { id:"yogurt",       label:"Yogurt",         cuisines:["Indian","Greek","Middle Eastern"],   flavors:["creamy","tangy","cool"] },
+  { id:"chili",        label:"Chili",          cuisines:["Mexican","Indian","Thai"],           flavors:["spicy","hot","earthy"] },
+  { id:"tamarind",     label:"Tamarind",       cuisines:["Indian","Thai","Mexican"],           flavors:["acidic","tangy","sweet"] },
+  { id:"sesame_oil",   label:"Sesame Oil",     cuisines:["Chinese","Japanese","Korean"],       flavors:["nutty","savory","aromatic"] },
+  { id:"cream",        label:"Cream",          cuisines:["French","American","Italian"],       flavors:["rich","creamy","mild"] },
+];
+
+// Populate selects
+["sel1","sel2","sel3"].forEach(sid => {
+  const el = document.getElementById(sid);
+  INGREDIENTS.forEach(ing => {
+    const o = document.createElement("option");
+    o.value = ing.id; o.textContent = ing.label;
+    el.appendChild(o);
+  });
+});
+
+function getSelected() {
+  return ["sel1","sel2","sel3"]
+    .map(sid => document.getElementById(sid).value)
+    .filter(Boolean)
+    .filter((v,i,a) => a.indexOf(v) === i);
+}
+
+function pairScore(a, b) {
+  const sharedC = a.cuisines.filter(c => b.cuisines.includes(c));
+  const sharedF = a.flavors.filter(f => b.flavors.includes(f));
+  return { sharedC, sharedF, total: sharedC.length * 2 + sharedF.length };
+}
+
+function computeRecs(selectedIds) {
+  const selected = selectedIds.map(id => INGREDIENTS.find(i => i.id === id));
+  const allCuisines = [...new Set(selected.flatMap(s => s.cuisines))];
+  const allFlavors  = [...new Set(selected.flatMap(s => s.flavors))];
+
+  return INGREDIENTS
+    .filter(ing => !selectedIds.includes(ing.id))
+    .map(ing => {
+      const sharedC = ing.cuisines.filter(c => allCuisines.includes(c));
+      const sharedF = ing.flavors.filter(f => allFlavors.includes(f));
+      const total   = sharedC.length * 2 + sharedF.length;
+
+      // Which selected ingredient contributed each connection?
+      const sources = selected.map(s => {
+        const sc = ing.cuisines.filter(c => s.cuisines.includes(c));
+        const sf = ing.flavors.filter(f => s.flavors.includes(f));
+        return { label: s.label, sc, sf, sub: sc.length * 2 + sf.length };
+      }).filter(s => s.sub > 0);
+
+      return { ...ing, sharedC, sharedF, total, sources };
+    })
+    .filter(i => i.total > 0)
+    .sort((a,b) => b.total - a.total)
+    .slice(0, 6);
+}
+
+function buildExplanation(rec, selectedIds) {
+  const selected = selectedIds.map(id => INGREDIENTS.find(i => i.id === id));
+  const parts = [];
+  rec.sources.forEach(src => {
+    const bits = [];
+    if (src.sc.length) bits.push(`shares <strong>${src.sc.join(", ")}</strong> cuisine${src.sc.length>1?"s":""}`);
+    if (src.sf.length) bits.push(`a <strong>${src.sf.join(" + ")}</strong> flavor profile`);
+    if (bits.length) parts.push(`<strong>${src.label}</strong>: ${bits.join(" and ")}`);
+  });
+  return parts.join(" · ");
+}
+
+const COLORS = { sel1:"#5C7A5C", sel2:"#C4622D", sel3:"#C9933A" };
+const EDGE_CUISINE = "#5C7A5C";
+const EDGE_FLAVOR  = "#C4622D";
+const EDGE_WEAK    = "#C9933A";
+const EDGE_NONE    = "#E0DDD7";
+
+function drawGraph(selectedIds) {
+  const svg = document.getElementById("rgsvg");
+  const W = 900, H = 420, CX = W/2, CY = H/2 - 10, R = 165;
+  const n = INGREDIENTS.length;
+
+  const positions = INGREDIENTS.map((ing, i) => {
+    const angle = (i / n) * 2 * Math.PI - Math.PI/2;
+    return { x: CX + R * Math.cos(angle), y: CY + R * Math.sin(angle), ing };
+  });
+
+  const selKeys = ["sel1","sel2","sel3"];
+  const selMap = {};
+  selKeys.forEach(k => {
+    const v = document.getElementById(k).value;
+    if (v) selMap[v] = k;
+  });
+
+  let html = `<defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>`;
+
+  // Edges
+  for (let i = 0; i < positions.length; i++) {
+    for (let j = i+1; j < positions.length; j++) {
+      const a = positions[i].ing, b = positions[j].ing;
+      const sc = a.cuisines.filter(c => b.cuisines.includes(c));
+      const sf = a.flavors.filter(f => b.flavors.includes(f));
+      const total = sc.length * 2 + sf.length;
+      if (total === 0) continue;
+
+      const aSelected = selectedIds.includes(a.id);
+      const bSelected = selectedIds.includes(b.id);
+      const highlight = aSelected || bSelected;
+
+      const color = sc.length >= 2 ? EDGE_CUISINE : sf.length >= 2 ? EDGE_FLAVOR : EDGE_WEAK;
+      const op = selectedIds.length === 0 ? 0.3 : (highlight ? 0.9 : 0.07);
+      const sw = highlight ? 1.8 : 1;
+
+      html += `<line x1="${positions[i].x.toFixed(1)}" y1="${positions[i].y.toFixed(1)}" x2="${positions[j].x.toFixed(1)}" y2="${positions[j].y.toFixed(1)}" stroke="${color}" stroke-width="${sw}" opacity="${op}"/>`;
+    }
+  }
+
+  // Nodes
+  positions.forEach(({ x, y, ing }) => {
+    const selKey = selMap[ing.id];
+    const isSelected = !!selKey;
+    const color = isSelected ? COLORS[selKey] : null;
+    const r = isSelected ? 28 : 20;
+
+    const fill   = isSelected ? color   : "#FFFFFF";
+    const stroke = isSelected ? color   : "#D0CEC9";
+    const sw     = isSelected ? 2.5     : 0.75;
+    const tf     = isSelected ? "#FFFFFF" : "#1C1A16";
+    const fw     = isSelected ? "500"   : "400";
+
+    const words = ing.label.split(" ");
+    const lines = words.length <= 2 ? words : [words[0], words.slice(1).join(" ")];
+    const dy0   = lines.length > 1 ? -6 : 0;
+
+    html += `<g style="cursor:pointer" onclick="selectByClick('${ing.id}')">
+      <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>
+      ${lines.map((l,li) =>
+        `<text x="${x.toFixed(1)}" y="${(y + dy0 + li * 13).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="10.5" font-family="'DM Sans', sans-serif" fill="${tf}" font-weight="${fw}">${l}</text>`
+      ).join("")}
+      ${isSelected ? `<text x="${x.toFixed(1)}" y="${(y+r+12).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="9" font-family="'DM Sans', sans-serif" fill="${color}" font-weight="500">${selKey.replace("sel","#")}</text>` : ""}
+    </g>`;
+  });
+
+  svg.innerHTML = html;
+}
+
+function selectByClick(id) {
+  const sels = ["sel1","sel2","sel3"].map(s => document.getElementById(s));
+  // If already selected, deselect it
+  for (const s of sels) {
+    if (s.value === id) { s.value = ""; update(); return; }
+  }
+  // Find first empty slot
+  const empty = sels.find(s => !s.value);
+  if (empty) { empty.value = id; update(); return; }
+  // Replace first slot
+  sels[0].value = id; update();
+}
+
+function update() {
+  const selectedIds = getSelected();
+  drawGraph(selectedIds);
+  renderRecs(selectedIds);
+}
+
+function renderRecs(selectedIds) {
+  const grid    = document.getElementById("recs-grid");
+  const empty   = document.getElementById("recs-empty");
+  const subtitle= document.getElementById("recs-subtitle");
+
+  if (selectedIds.length === 0) {
+    grid.style.display = "none";
+    empty.style.display = "block";
+    subtitle.textContent = "Pick at least one ingredient above to generate recommendations.";
+    return;
+  }
+
+  const selected = selectedIds.map(id => INGREDIENTS.find(i => i.id === id));
+  const names = selected.map(s => s.label).join(", ");
+  subtitle.textContent = `Based on your selection: ${names}`;
+
+  const recs = computeRecs(selectedIds);
+  empty.style.display = "none";
+  grid.style.display = "grid";
+
+  if (recs.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--ink-muted);font-size:14px">No strong matches found for this combination.</div>`;
+    return;
+  }
+
+  const maxScore = recs[0].total;
+
+  grid.innerHTML = recs.map((rec, idx) => {
+    const pct = Math.round(rec.total / maxScore * 100);
+    const cuisineTags = rec.sharedC.map(c => `<span class="rec-tag tag-cuisine">${c}</span>`).join("");
+    const flavorTags  = rec.sharedF.map(f => `<span class="rec-tag tag-flavor">${f}</span>`).join("");
+    const why = buildExplanation(rec, selectedIds);
+    const strength = rec.total >= 6 ? "Excellent" : rec.total >= 4 ? "Strong" : rec.total >= 2 ? "Good" : "Moderate";
+    return `
+    <div class="rec-card" id="rc-${idx}">
+      <div class="rec-rank">${strength} match · #${idx+1}</div>
+      <div class="rec-name">${rec.label}</div>
+      <div class="rec-score-wrap">
+        <div class="rec-score-bar-bg">
+          <div class="rec-score-bar" style="width:${pct}%"></div>
+        </div>
+        <div class="rec-score-num">Score: ${rec.total}</div>
+      </div>
+      <div class="rec-tags">${cuisineTags}${flavorTags}</div>
+      <div class="rec-why">${why || "Shares flavor characteristics with your selection."}</div>
+    </div>`;
+  }).join("");
+
+  // Stagger-animate cards in
+  recs.forEach((_, idx) => {
+    setTimeout(() => {
+      const card = document.getElementById(`rc-${idx}`);
+      if (card) card.classList.add("visible");
+    }, idx * 60);
+  });
+}
+
+// Init
+drawGraph([]);
+renderRecs([]);
+</script>
+</body>
+</html>
